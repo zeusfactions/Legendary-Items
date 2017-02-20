@@ -1,0 +1,10 @@
+name: LegendaryItems
+main: com.zeusfactions.legendaryitems
+version: 0.01-SNAPSHOT
+description: An addon for RPGItems that provides cool af Legendary Items.
+commands: 
+	li:
+		description: Base command for all LegendaryItems commands.
+		
+dependency: [RPGItems]
+loadbefore: [RPGItems]
