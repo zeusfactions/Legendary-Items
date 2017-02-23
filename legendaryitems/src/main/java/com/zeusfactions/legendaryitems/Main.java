@@ -1,21 +1,17 @@
 package com.zeusfactions.legendaryitems;
 
-import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.logging.Logger;
 
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.zeusfactions.legendaryitems.Commands.CommandManager;
-import com.zeusfactions.legendaryitems.Commands.OwnCommand;
-import com.zeusfactions.legendaryitems.Storage.LegendaryItems;
-
-import Exceptions.DependencyNotFoundException;
+import com.zeusfactions.legendaryitems.Commands.DisownCommand;
 
 
 /**
- * Hello world!
- *
+ * This is the main class. In addition to being where the plugin enables and disables, it also extends JavaPlugin, 
+ * and we can use its singleton to call important methods like getLogger(). 
  */
 public class Main extends JavaPlugin
 {
@@ -28,7 +24,7 @@ public class Main extends JavaPlugin
 		}
 		return INSTANCE;
 	}
-	
+
 	private Logger logger;
 	
     @Override
@@ -38,7 +34,7 @@ public class Main extends JavaPlugin
     	logger.info("Legendary Items is enabling.");
     	
     	getCommand(CommandManager.getBaseCommand()).setExecutor(new CommandManager()); //li
-    	CommandManager.addComand(Arrays.asList(OwnCommand.getCommand()), new OwnCommand());	//li claim
+    	CommandManager.addComand(Arrays.asList(DisownCommand.getCommand()), new DisownCommand());	//li claim
     	
     	logger.info("Loading item list...");
     }
@@ -48,10 +44,6 @@ public class Main extends JavaPlugin
     {
     	
     }
-	public void killPlugin()
-	{
-		
-	}
     
     
     

@@ -1,5 +1,7 @@
 package com.zeusfactions.legendaryitems.Items;
 
+import java.lang.reflect.Array;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.logging.Logger;
 
@@ -21,19 +23,24 @@ public class LegendaryItem {
 	
 	private Chest dungeonChest;
 	private Inventory inventory;
-	private ItemStack itemStack;
+	private ItemStack[] itemStacks;
 	
-	public LegendaryItem(Chest dungeonChest, ItemStack itemStack)
+	public LegendaryItem(Chest dungeonChest, ItemStack[] itemStacks)
 	{
 		logger.fine("Constructing a legendary item."); 
 		logger.fine("Running preconditions...");
 		
-		Preconditions.checkNotNull(itemStack, "The Plugin passed a null LegendaryItem to the LegendaryItem constructor.");
+		Preconditions.checkNotNull(itemStacks, "The Plugin passed a null LegendaryItem to the LegendaryItem constructor.");
 		Preconditions.checkNotNull(dungeonChest, "The Plugin passed a null Inventory to the LegendaryItem constructor.");
-		Preconditions.checkArgument(dungeonChest.getInventory().contains(itemStack), "The plugin tried to tie a legendary item to an inventory who did not own it.");
+		for(ItemStack i : itemStacks)
+		{
+			Preconditions.checkArgument(dungeonChest.getInventory().contains(i), "The plugin tried to make a legendary item"
+					+ " but its item set wasn't in the associated chest.");
+		}
 		
 		logger.fine("Setting object variables to those in the constructor");
-		this.itemStack = itemStack;
+		
+		this.itemStacks = itemStacks;
 		this.dungeonChest = dungeonChest;
 		this.inventory = dungeonChest.getInventory();
 		
@@ -41,6 +48,8 @@ public class LegendaryItem {
 	
 	public void giveTo(Inventory taker) 
 	{
+		validate();
+		
 		logger.fine("Legendary Item " + getName() + " is being given to another inventory."); 
 		logger.finer("Running preconditions...");
 		
@@ -50,11 +59,16 @@ public class LegendaryItem {
 		
 		if(inventory!=null)
 		{
-			inventory.removeItem(itemStack);
+			HashMap<Integer, ItemStack> unremovedItems = inventory.removeItem(itemStacks);
+			if(!unremovedItems.isEmpty())
+			{
+				logger.warning("The plugin attempted to give someone's legendary item set to someone else but was unable to "
+						+ "remove the entire legendary item set from the original player.");
+			}
 		}
 		
 		inventory = taker;
-		inventory.addItem(itemStack);
+		inventory.addItem(itemStacks);
 	}
 
 	public InventoryHolder getInventoryHolder()
@@ -83,46 +97,77 @@ public class LegendaryItem {
 		return null;
 	}
 	
-	public void whenceItCame()
+	public void moveToDungeonChest()
 	{
 		logger.fine("The legendary item " + getName() + " is being sent to its original dungeon spot.");
 		
-		
 		logger.finer("Changing item location.");
-		
-		Inventory dungeonChestInventory = dungeonChest.getInventory();
-		HashMap<Integer, ItemStack> missedItems = dungeonChestInventory.addItem(itemStack);
-		
-		if(!missedItems.isEmpty())
-		{
-			logger.warning("Legendary item " + getName() + " was unable to be transported back to its chest, because it was full.");
-			logger.warning("The item will be removed and you will have to recreate it and assign it to the chest.");
-			if(legendaryItems.getItemList().contains(this))
-			{
-				legendaryItems.removeItem(this);
-			}
-		} 
-		else 
-		{
-			logger.finer("Item moved back to original dungeon chest.");
-		}
-		
-		inventory.remove(itemStack);
-		inventory = dungeonChestInventory;
+		giveTo(dungeonChest.getInventory());
 		
 		logger.finer("Deleted item from original storage location (probably a player inventory).");
 		
 	}
 	
 	public String getName(){
-		
-		logger.finest("Retrieving item name.");
-		return itemStack.getItemMeta().getDisplayName();
+		logger.finest("Retrieving first item name.");
+		return itemStacks[0].getItemMeta().getDisplayName();
 	}
 	
-	public ItemStack getItemStack(){
-		logger.finer("Retrieving itemStack from legendaryItem " + getName());
-		return itemStack;
+	public boolean sameItemStacks(ItemStack[] itemStacks){
+		return this.itemStacks == itemStacks;
+	}
+
+	public Inventory getInventory()
+	{
+		logger.finer("Retrieving inventory from legendaryItem " + getName());
+		return inventory;
+	}
+
+	
+	/**
+	 * This function makes sure all variables are correct, if they are not correct attempts to update them,
+	 * and then if it can't deletes the LegendaryItem.
+	 * 
+	 * This should be called at the beginning of each inventory-related function in this class.
+	 */
+	private void validate()
+	{
+		Inventory correctInventory = inventory.getHolder().getInventory();
+		if(inventory != correctInventory)
+		{
+			for(ItemStack i: itemStacks)
+			{	
+				if(correctInventory.contains(i))
+				{			
+					inventory = correctInventory;
+				} 
+				else 
+				{
+					logger.warning("A legendary item has been lost");
+					logger.warning("Removing this legendary item from the legendary items list because it's fucking gone.");
+					deleteItem();
+					return;
+				}
+			}
+		}
+		
+	}
+
+	private void deleteItem()
+	{
+		inventory.removeItem(itemStacks);
+		inventory.getHolder().getInventory().removeItem(itemStacks);
+		legendaryItems.removeItem(this);
+	}
+
+	public ItemStack[] getItemStacks()
+	{
+		return itemStacks;
+	}
+
+	public boolean containsItemStacks(ItemStack[] items)
+	{
+		return Arrays.asList(itemStacks).containsAll(Arrays.asList(items));
 	}
 	
 	

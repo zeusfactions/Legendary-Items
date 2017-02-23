@@ -33,9 +33,9 @@ public class OnPlayerKilled {
 		
 		Player killer = (Player) killerEntity;
 		
-		if(legendaryItems.hasItem(player))
+		if(legendaryItems.playerHasItem(player))
 		{
-			legendaryItems.transferItems(player, killer);
+			legendaryItems.transferItems(player.getInventory(), killer.getInventory());;
 		}
 	}
 }

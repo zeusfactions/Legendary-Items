@@ -8,6 +8,11 @@ import org.bukkit.entity.Player;
 
 import com.zeusfactions.legendaryitems.Main;
 
+/**
+ * This is an abstract class that all legendaryitems commands extend.
+ * <br>
+ * It contains several methods that can/must be overriden, such as getPermission() and needsPlayer().
+ */
 public abstract class Subcommand
 {
 	protected Logger logger = Main.getInstance().getLogger();

@@ -5,6 +5,7 @@ import java.util.logging.Logger;
 
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 
 import com.google.common.base.Preconditions;
@@ -36,18 +37,31 @@ public class LegendaryItems {
 		return legendaryItems;
 	}
 	
-	public boolean hasLegendary(ItemStack item)
+	/**
+	 * This function returns <i>a</i> legendary item with the following characteristics, but so far cannot validate whether or not
+	 * it's the <i>right</i> legendary item. Hopefully with some NMS this might change in the future. 
+	 * 
+	 * @param itemStacks (The itemStacks that the legendary item has)
+	 * @param inventory (The inventory it's contained in)
+	 * @return A legendary item has the itemStacks specified and is contained in the inventory specified. Returns null if there is no matching legendary item. 
+	 * 
+	 * <br><br>
+	 * 
+	 * 
+	 */
+	public LegendaryItem getEquivalentLegendary(ItemStack[] itemStacks, Inventory inventory)
 	{
-		logger.fine("Checking if LegendaryItem has an ItemStack...");
+		logger.finest("Checking if an item inventoryHolder has a matching legendary.");
 		
 		for(LegendaryItem i: legendaryItems){
-			if(i.getItemStack() == item)
+			if(i.getItemStacks() == itemStacks && i.getInventory() == inventory)
 			{
-				logger.fine("Item found.");
-				return true;
+				logger.finest("Item found.");
+				return i;
 			}
 		}
-		return false;
+		logger.finest("Item not found.");
+		return null;
 	}
 	
 	/**
